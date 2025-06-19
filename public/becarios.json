@@ -1,0 +1,93 @@
+[
+  {
+    "id": 1,
+    "legajo": "31075",
+    "apellido": "García",
+    "nombre": "María",
+    "dni": "30.123.456",
+    "nroMovil": "11-1234-5678",
+    "usuarioTelegram": "@mgarcia",
+    "email": "maria.garcia@example.com",
+    "anioCurso": "4",
+    "areaInscripcion": "Desarrollo",
+    "beca": "Manuel Belgrano"
+  },
+  {
+    "id": 2,
+    "legajo": "31015",
+    "apellido": "Pérez",
+    "nombre": "Juan",
+    "dni": "29.987.654",
+    "nroMovil": "11-8765-4321",
+    "usuarioTelegram": "@jperez",
+    "email": "juan.perez@example.com",
+    "anioCurso": "5",
+    "areaInscripcion": "Infraestructura",
+    "beca": "SAU"
+  },
+  {
+    "id": 3,
+    "legajo": "31095",
+    "apellido": "Rodríguez",
+    "nombre": "Lucía",
+    "dni": "28.555.333",
+    "nroMovil": "11-2345-6789",
+    "usuarioTelegram": "@lrodriguez",
+    "email": "lucia.rodriguez@example.com",
+    "anioCurso": "3",
+    "areaInscripcion": "Infraestructura",
+    "beca": "Manuel Belgrano"
+  },
+  {
+    "id": 4,
+    "legajo": "21075",
+    "apellido": "Fernández",
+    "nombre": "Martín",
+    "dni": "27.444.222",
+    "nroMovil": "11-3456-7890",
+    "usuarioTelegram": "@mfernandez",
+    "email": "martin.fernandez@example.com",
+    "anioCurso": "3",
+    "areaInscripcion": "Ingenieria Social",
+    "beca": "SAU"
+  },
+  {
+    "id": 5,
+    "legajo": "31975",
+    "apellido": "López",
+    "nombre": "Sofía",
+    "dni": "26.333.111",
+    "nroMovil": "11-4567-8901",
+    "usuarioTelegram": "@slopez",
+    "email": "sofia.lopez@example.com",
+    "anioCurso": "4",
+    "areaInscripcion": "Desarrollo",
+    "beca": ""
+  },
+  {
+    "id": 6,
+    "legajo": "31875",
+    "apellido": "González",
+    "nombre": "Diego",
+    "dni": "25.222.000",
+    "nroMovil": "11-5678-9012",
+    "usuarioTelegram": "@dgonzalez",
+    "email": "diego.gonzalez@example.com",
+    "anioCurso": "5",
+    "areaInscripcion": "Desarrollo",
+    "beca": "Manuel Belgrano"
+  },
+  {
+    "id": 7,
+    "legajo": "39075",
+    "apellido": "Martínez",
+    "nombre": "Camila",
+    "dni": "24.111.999",
+    "nroMovil": "11-6789-0123",
+    "usuarioTelegram": "@cmartinez",
+    "email": "camila.martinez@example.com",
+    "anioCurso": "2",
+    "areaInscripcion": "Infraestructura",
+    "beca": ""
+  }
+]
