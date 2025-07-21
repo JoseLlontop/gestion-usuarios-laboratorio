@@ -11,3 +11,12 @@ export interface Becario {
   areaInscripcion: string;
   beca: string;
 }
+
+
+export interface Profesor {
+  id: number;
+  apellido: string;
+  nombre: string;
+  email: string;
+  areaAsignada: string;
+}
