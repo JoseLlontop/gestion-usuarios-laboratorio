@@ -109,7 +109,22 @@ const ModalNuevoBecario: React.FC<ModalNuevoBecarioProps> = ({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+  <Dialog
+    open={open}
+    onClose={onClose}
+    maxWidth="sm"
+    fullWidth
+    PaperProps={{
+      sx: {
+        position: 'absolute',
+        top: '49%',
+        left: '56%',
+        transform: 'translate(-50%, -50%)',
+        // opcional: elevar el zIndex para asegurarte de que quede por encima de todo
+        zIndex: (theme) => theme.zIndex.modal + 10,
+      }
+    }}
+  >
       <DialogTitle>
         {becario ? 'Editar Becario' : 'Nuevo Becario'}
       </DialogTitle>

@@ -12,10 +12,31 @@ import {
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import assets from '../../assets'; // Asegúrate de que la ruta sea correcta
+import { useState } from 'react';
+import ModalNuevoBecario from '../../components/becario/ModalNuevoBecario';
+import { Becario } from '../../models/types';
+import { show_alerta } from '../../helpers/funcionSweetAlert';
 
-type Props = {};
+const HomePage = () => {
+  // Estado para controlar el modal
+  const [openModal, setOpenModal] = useState(false);
 
-const HomePage = (props: Props) => {
+  // Función para guardar un nuevo becario (puedes adaptarla a tu API)
+  const handleSaveBecario = async (becario: Becario) => {
+    try {
+      // Aquí harías el POST a tu API
+      // const res = await fetch('/api/becarios/crear', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(becario) });
+      // if (!res.ok) throw new Error();
+
+      // Simulación de guardado exitoso
+      show_alerta('Becario registrado con éxito', 'success');
+      setOpenModal(false);
+    } catch (err) {
+      console.error(err);
+      show_alerta('Error al registrar becario', 'error');
+    }
+  };
+
   return (
     <Container maxWidth="lg" sx={{ mt: -1, mb: 4 }}>
       {/* Sección principal (Hero) */}
@@ -32,7 +53,7 @@ const HomePage = (props: Props) => {
           Laboratorio de Innovaciones en Sistemas de Información
         </Typography>
         <Typography variant="h6" component="p" color="text.secondary">
-          Bienvenido al LINSI un espacio colaborativo de la UTN La Plata donde estudiantes y docentes trabajan en proyectos de Ingeniería Social, Infraestructura y Desarrollo de Software. ¡Sumate y sé parte de la innovación!
+          Bienvenido al LINSI, un espacio colaborativo de la UTN La Plata donde estudiantes y docentes trabajan en proyectos de Ingeniería Social, Infraestructura y Desarrollo de Software. ¡Sumate y sé parte de la innovación!
         </Typography>
       </Box>
 
@@ -41,8 +62,7 @@ const HomePage = (props: Props) => {
         {/* Card 1: Becario */}
         <Grid item xs={12} sm={6}>
           <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <CardActionArea component={RouterLink} to="/registro-becario">
-              {/* Reemplaza 'ruta-a-imagen-becario.jpg' con la ruta real */}
+            <CardActionArea onClick={() => setOpenModal(true)}>
               <CardMedia
                 component="img"
                 height="200"
@@ -64,8 +84,7 @@ const HomePage = (props: Props) => {
                 fullWidth 
                 variant="contained" 
                 color="primary" 
-                component={RouterLink} 
-                to="/registro-becario"
+                onClick={() => setOpenModal(true)}
               >
                 Registrarme
               </Button>
@@ -77,7 +96,6 @@ const HomePage = (props: Props) => {
         <Grid item xs={12} sm={6}>
           <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
             <CardActionArea component={RouterLink} to="/login-profesor">
-              {/* Reemplaza 'ruta-a-imagen-profesor.jpg' con la ruta real */}
               <CardMedia
                 component="img"
                 height="200"
@@ -108,6 +126,14 @@ const HomePage = (props: Props) => {
           </Card>
         </Grid>
       </Grid>
+
+      {/* Modal para registrar Becario */}
+      <ModalNuevoBecario
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+        onSave={handleSaveBecario}
+        becario={null}
+      />
     </Container>
   );
 };
