@@ -1,16 +1,17 @@
 import { useEffect, useState } from 'react';
-import { Box, Button, TextField, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, Paper, IconButton } from '@mui/material';
+import { Box, Button, TextField, Select, MenuItem, InputLabel, FormControl, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, Paper, IconButton } from '@mui/material';
 
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ModalNuevoBecario from '../../components/becario/ModalNuevoBecario';
-import { show_alerta } from '../../helpers/funcionSweetAlert'; 
+import { show_alerta } from '../../helpers/funcionSweetAlert';
 import { Becario } from '../../models/types';
 
-const GestionBecarios = () => {
+const GestionAdminBecarios = () => {
   const [becarios, setBecarios] = useState<Becario[]>([]);
   const [filtroNombre, setFiltroNombre] = useState('');
+  const [filtroArea, setFiltroArea] = useState('');
   const [openModal, setOpenModal] = useState(false);
   const [currentBecario, setCurrentBecario] = useState<Becario | null>(null);
 
@@ -25,41 +26,33 @@ const GestionBecarios = () => {
       .catch(err => console.error('Error cargando becarios:', err));
   }, [API_URL]);
 
-  // Filtrado por nombre o apellido
-  const becariosFiltrados = becarios.filter(b =>
-    (`${b.nombre} ${b.apellido}`)
-      .toLowerCase()
-      .includes(filtroNombre.toLowerCase())
-  );
+  // Filtrado por nombre/apellido y área
+  const becariosFiltrados = becarios.filter(b => {
+    const matchNombre = (`${b.nombre} ${b.apellido}`).toLowerCase().includes(filtroNombre.toLowerCase());
+    const matchArea = filtroArea ? b.areaInscripcion === filtroArea : true;
+    return matchNombre && matchArea;
+  });
 
-  // Crear o actualizar becario
+  // Guardar
   const handleSaveBecario = async (becario: Becario) => {
     try {
-      const url = becario.id
-        ? `${API_URL}/api/becarios/${becario.id}`
-        : `${API_URL}/api/becarios/crear`;
+      const url = becario.id ? `${API_URL}/api/becarios/${becario.id}` : `${API_URL}/api/becarios/crear`;
       const method = becario.id ? 'PUT' : 'POST';
-
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(becario),
       });
-      if (!res.ok) throw new Error('Error al guardar becario');
+      if (!res.ok) throw new Error();
       const saved = await res.json();
-
       setBecarios(prev =>
         becario.id
           ? prev.map(b => (b.id === saved.id ? saved : b))
           : [...prev, saved]
       );
-      show_alerta(
-        becario.id ? 'Becario actualizado con éxito' : 'Becario registrado con éxito',
-        'success'
-      );
-    } catch (e) {
-      console.error(e);
-      show_alerta('Ocurrió un error al guardar el becario', 'error');
+      show_alerta(becario.id ? 'Becario actualizado' : 'Becario registrado', 'success');
+    } catch {
+      show_alerta('Error al guardar becario', 'error');
     } finally {
       setOpenModal(false);
       setCurrentBecario(null);
@@ -68,14 +61,14 @@ const GestionBecarios = () => {
 
   // Eliminar
   const handleDeleteBecario = async (id: number) => {
-    if (!window.confirm('¿Confirma eliminación de este becario?')) return;
+    if (!window.confirm('¿Confirma eliminación?')) return;
     try {
       const res = await fetch(`${API_URL}/api/becarios/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error();
       setBecarios(prev => prev.filter(b => b.id !== id));
       show_alerta('Becario eliminado', 'success');
     } catch {
-      show_alerta('Error al eliminar becario', 'error');
+      show_alerta('Error al eliminar', 'error');
     }
   };
 
@@ -84,32 +77,36 @@ const GestionBecarios = () => {
       <Typography
         variant="h4"
         align="center"
-        sx={{
-          fontWeight: 'bold',
-          backgroundColor: '#233044',
-          color: 'white',
-          p: '1rem',
-          borderRadius: 2,
-          mb: 3,
-        }}
+        sx={{ fontWeight: 'bold', backgroundColor: '#233044', color: 'white', p: '1rem', borderRadius: 2, mb: 3 }}
       >
         Gestión de Becarios
       </Typography>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2} gap={2}>
         <TextField
           placeholder="Buscar por nombre o apellido"
           value={filtroNombre}
           onChange={e => setFiltroNombre(e.target.value)}
           size="small"
+          sx={{ width: 260 }} // Ajusta el ancho 
         />
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => {
-            setCurrentBecario(null);
-            setOpenModal(true);
-          }}
-        >
+
+        <FormControl size="small" sx={{ minWidth: 180 }}>
+          <InputLabel id="label-area">Filtrar área</InputLabel>
+          <Select
+            labelId="label-area"
+            value={filtroArea}
+            label="Filtrar área"
+            onChange={e => setFiltroArea(e.target.value)}
+          >
+            <MenuItem value="">Todas</MenuItem>
+            <MenuItem value="Desarrollo">Desarrollo</MenuItem>
+            <MenuItem value="Infraestructura">Infraestructura</MenuItem>
+            <MenuItem value="Ingenieria Social">Ingenieria Social</MenuItem>
+          </Select>
+        </FormControl>
+
+        <Button variant="contained" startIcon={<AddIcon />} onClick={() => { setCurrentBecario(null); setOpenModal(true); }}>
           Nuevo Becario
         </Button>
       </Box>
@@ -118,24 +115,15 @@ const GestionBecarios = () => {
         <Table stickyHeader>
           <TableHead sx={{ backgroundColor: '#f5f5f5' }}>
             <TableRow>
-              <TableCell>#</TableCell>
-              <TableCell>Legajo</TableCell>
-              <TableCell>Apellido</TableCell>
-              <TableCell>Nombre</TableCell>
-              <TableCell>DNI</TableCell>
-              <TableCell>Móvil</TableCell>
-              <TableCell>Telegram</TableCell>
-              <TableCell>E‑mail</TableCell>
-              <TableCell>Año</TableCell>
-              <TableCell>Área</TableCell>
-              <TableCell>Beca</TableCell>
-              <TableCell>Acciones</TableCell>
+              {['#','Legajo','Apellido','Nombre','DNI','Móvil','Telegram','E‑mail','Año','Área','Beca','Acciones'].map(h => (
+                <TableCell key={h}>{h}</TableCell>
+              ))}
             </TableRow>
           </TableHead>
           <TableBody>
             {becariosFiltrados.map((b, i) => (
               <TableRow key={b.id}>
-                <TableCell>{i + 1}</TableCell>
+                <TableCell>{i+1}</TableCell>
                 <TableCell>{b.legajo}</TableCell>
                 <TableCell>{b.apellido}</TableCell>
                 <TableCell>{b.nombre}</TableCell>
@@ -160,14 +148,9 @@ const GestionBecarios = () => {
         </Table>
       </TableContainer>
 
-      <ModalNuevoBecario
-        open={openModal}
-        onClose={() => { setOpenModal(false); setCurrentBecario(null); }}
-        onSave={handleSaveBecario}
-        becario={currentBecario}
-      />
+      <ModalNuevoBecario open={openModal} onClose={() => { setOpenModal(false); setCurrentBecario(null); }} onSave={handleSaveBecario} becario={currentBecario} />
     </Box>
   );
 };
 
-export default GestionBecarios;
+export default GestionAdminBecarios;
