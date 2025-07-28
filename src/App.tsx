@@ -6,35 +6,37 @@ import LoginPage from './pages/login/LoginPage';
 import PrivateRoute from './components/PrivateRoute';
 import GestionAdminBecario from './pages/becario/GestionAdminBecario';
 import PageWrapper from './components/layout/PageWrapper';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Routes>
-          {/* Toda la app bajo el mismo layout */}
-          <Route path="/" element={<MainLayout />}>
-            
-            {/* 🚪 Rutas públicas, generadas dinámicamente */}
-            {routes}
+        <ErrorBoundary>
+          <Routes>
+            {/* Toda la app bajo el mismo layout */}
+            <Route path="/" element={<MainLayout />}>
+              
+              {/* 🚪 Rutas públicas, generadas dinámicamente */}
+              {routes}
 
-            {/* 🚪 Ruta de login */}
-            <Route path="/login-profesor" element={<LoginPage />} />
+              {/* 🚪 Ruta de login */}
+              <Route path="/login-profesor" element={<LoginPage />} />
 
-            {/* 🔐 Grupo de rutas privadas */}
-            <Route element={<PrivateRoute />}>
-              <Route
-                path="/gestion-admin-becario"
-                element={
-                  <PageWrapper state="gestionAdminBecario">
-                    <GestionAdminBecario />
-                  </PageWrapper>
-                }
-              />
+              {/* 🔐 Grupo de rutas privadas */}
+              <Route element={<PrivateRoute />}>
+                <Route
+                  path="/gestion-admin-becario"
+                  element={
+                    <PageWrapper state="gestionAdminBecario">
+                      <GestionAdminBecario />
+                    </PageWrapper>
+                  }
+                />
+              </Route>
             </Route>
-            
-          </Route>
-        </Routes>
+          </Routes>
+        </ErrorBoundary>
       </AuthProvider>
     </BrowserRouter>
   );
