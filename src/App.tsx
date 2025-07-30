@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import MainLayout from './components/layout/MainLayout';
 import { routes } from './routes/index';          // tu generación dinámica de rutas públicas
@@ -34,6 +34,8 @@ function App() {
                   }
                 />
               </Route>
+            {/* cualquier otra ruta → redirige al Home */}
+           <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
           </Routes>
         </ErrorBoundary>
