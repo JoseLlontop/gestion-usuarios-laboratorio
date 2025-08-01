@@ -7,6 +7,10 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import ModalNuevoBecario from '../../components/becario/ModalNuevoBecario';
 import { show_alerta } from '../../helpers/funcionSweetAlert';
 import { Becario } from '../../models/types';
+import { useNavigate } from 'react-router-dom';
+
+// Importamos el hook de autenticación
+import { useAuth } from '../../context/AuthContext';
 
 const GestionAdminBecarios = () => {
   const [becarios, setBecarios] = useState<Becario[]>([]);
@@ -14,6 +18,11 @@ const GestionAdminBecarios = () => {
   const [filtroArea, setFiltroArea] = useState('');
   const [openModal, setOpenModal] = useState(false);
   const [currentBecario, setCurrentBecario] = useState<Becario | null>(null);
+
+  const navigate = useNavigate();
+
+  // Extraemos logout desde el contexto
+  const { logout } = useAuth();
 
   const API_URL = process.env.REACT_APP_BACKEND_API_URL as string;
 
@@ -74,21 +83,57 @@ const GestionAdminBecarios = () => {
 
   return (
     <Box sx={{ mt: -3, pb: 0 }}>
-      <Typography
-        variant="h4"
-        align="center"
-        sx={{ fontWeight: 'bold', backgroundColor: '#233044', color: 'white', p: '1rem', borderRadius: 2, mb: 3 }}
-      >
-        Gestión de Becarios
-      </Typography>
 
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2} gap={2}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          backgroundColor: '#233044',
+          color: 'white',
+          px: 3,
+          py: 2,
+          borderRadius: 2,
+          mb: 3
+        }}
+      >
+        {/* Espacio vacío para equilibrar */}
+        <Box sx={{ width: 48 /* anchura similar al botón */ }} />
+
+        {/* Título con flexGrow para centrar */}
+        <Typography
+          variant="h4"
+          sx={{ flexGrow: 1, textAlign: 'center', fontWeight: 'bold' }}
+        >
+          Gestión de Becarios
+        </Typography>
+
+        {/* Botón de Cerrar Sesión */}
+        <Button
+          variant="outlined"
+          color="inherit"
+          onClick={async () => {
+            navigate('/login-profesor', { replace: true }); 
+            await logout();
+          }}
+        >
+          Cerrar Sesión
+        </Button>
+      </Box>
+
+      {/* Filtros con menor separación */}
+      <Box
+        display="flex"
+        alignItems="center"
+        mb={2}
+        gap={2}               // reduce el espacio
+        sx={{ flexWrap: 'wrap' }} // que bajen si falta espacio
+      >
         <TextField
-          placeholder="Buscar por nombre o apellido"
+          label="Buscar por nombre y apellido"
           value={filtroNombre}
           onChange={e => setFiltroNombre(e.target.value)}
           size="small"
-          sx={{ width: 260 }} // Ajusta el ancho 
+          sx={{ width: 260 }}  // Ajusta el ancho 
         />
 
         <FormControl size="small" sx={{ minWidth: 180 }}>

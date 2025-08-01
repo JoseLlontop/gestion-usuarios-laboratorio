@@ -4,7 +4,7 @@ import MainLayout from './components/layout/MainLayout';
 import { routes } from './routes/index';          // tu generación dinámica de rutas públicas
 import LoginPage from './pages/login/LoginPage';
 import PrivateRoute from './components/PrivateRoute';
-import GestionAdminBecario from './pages/becario/GestionAdminBecario';
+import GestionAdminBecarios from './pages/becario/GestionAdminBecarios';
 import PageWrapper from './components/layout/PageWrapper';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
@@ -26,10 +26,10 @@ function App() {
               {/* 🔐 Grupo de rutas privadas */}
               <Route element={<PrivateRoute />}>
                 <Route
-                  path="/gestion-admin-becario"
+                  path="/gestion-admin-becarios"
                   element={
                     <PageWrapper state="gestionAdminBecario">
-                      <GestionAdminBecario />
+                      <GestionAdminBecarios />
                     </PageWrapper>
                   }
                 />
