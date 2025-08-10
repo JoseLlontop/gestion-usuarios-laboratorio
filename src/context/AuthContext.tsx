@@ -1,65 +1,89 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import api from '../helpers/axion'; // Axios con withCredentials para cookies HttpOnly
-import { Profesor } from '../models/types'; // Importa el tipo Profesor
+import React, { createContext, useContext, useEffect, useState } from "react";
+import type { ReactNode } from "react";
+import { auth } from "../firebase";
+import { onAuthStateChanged, User } from "firebase/auth";
+import { signIn as signInService, logout as logoutService } from "../services/auth";
 
-// Especificamos qué expone el contexto de autenticación
+/** Interfaz del contexto (muy simple) */
 interface AuthContextProps {
-  profesor: Profesor | null;       // datos del profesor conectado o null
-  error: string | null;            // mensaje de error al iniciar sesión
-  login: (email: string, password: string) => Promise<void>;  // función de login
-  logout: () => Promise<void>;     // función de logout
+  user: User | null;
+  loading: boolean;            // mientras se inicializa el listener o durante login/logout
+  error: string | null;        // último error de login si lo hay
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
 }
 
-// Creamos el contexto con valores iniciales (placeholders)
 const AuthContext = createContext<AuthContextProps>({
-  profesor: null,
+  user: null,
+  loading: true,
   error: null,
   login: async () => {},
   logout: async () => {}
 });
 
-// Provider que envuelve la app y gestiona el estado de sesión
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [profesor, setProfesor] = useState<Profesor | null>(null);
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Al cargar la app, comprobamos si hay sesión activa
   useEffect(() => {
-    api.get<Profesor>('/api/me')
-      .then(res => setProfesor(res.data))
-      .catch(() => setProfesor(null));
+    // Listener Firebase: mantiene el estado del user actualizado
+    const unsub = onAuthStateChanged(auth, (u) => {
+      setUser(u);
+      setLoading(false);
+    });
+    return () => unsub();
   }, []);
 
-  // Entra con email y password
-  const login = async (email: string, password: string) => {
-    try {
-      setError(null);
-      await api.post('/api/login', { email, password });
-      const res = await api.get<Profesor>('/api/me');
-      setProfesor(res.data);
-    } catch (err: any) {
-      if (err.response?.status === 401) {
-        setError('Correo o contraseña incorrectos');
-      } else {
-        setError('No se pudo conectar al servidor');
-      }
-      setProfesor(null);
-      throw err;
+  // Mapeo simple de errores Firebase a mensajes legibles (puedes ampliarlo)
+  const firebaseErrorToMessage = (err: any): string => {
+    const code: string | undefined = err?.code ?? undefined;
+    switch (code) {
+      case "auth/wrong-password":
+        return "Contraseña incorrecta.";
+      case "auth/user-not-found":
+        return "No existe una cuenta con ese correo.";
+      case "auth/invalid-email":
+        return "Correo con formato incorrecto.";
+      case "auth/too-many-requests":
+        return "Demasiados intentos. Intentá más tarde.";
+      case "auth/user-disabled":
+        return "Cuenta deshabilitada. Contactá al administrador.";
+      default:
+        return err?.message ?? "Error al autenticar.";
     }
   };
 
-  // Cierra la sesión y pide al backend borrar la cookie
+  const login = async (email: string, password: string) => {
+    setError(null);
+    setLoading(true);
+    try {
+      await signInService(email.trim(), password);
+      // onAuthStateChanged actualizará `user` cuando el login tenga éxito
+    } catch (err: any) {
+      const msg = firebaseErrorToMessage(err);
+      setError(msg);
+      throw err; // lanzar para que la UI también pueda manejar el error si quiere
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const logout = async () => {
-    await api.post('/api/logout');
-    setProfesor(null);
+    setLoading(true);
+    try {
+      await logoutService();
+      // onAuthStateChanged actualizará user a null
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ profesor, error, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, error, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-// Hook personalizado para usar el contexto
 export const useAuth = () => useContext(AuthContext);

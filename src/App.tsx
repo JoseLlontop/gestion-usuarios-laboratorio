@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
 import MainLayout from './components/layout/MainLayout';
 import { routes } from './routes/index';          // tu generación dinámica de rutas públicas
 import LoginPage from './pages/login/LoginPage';
@@ -11,7 +10,6 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
         <ErrorBoundary>
           <Routes>
             {/* Toda la app bajo el mismo layout */}
@@ -39,7 +37,6 @@ function App() {
             </Route>
           </Routes>
         </ErrorBoundary>
-      </AuthProvider>
     </BrowserRouter>
   );
 }
