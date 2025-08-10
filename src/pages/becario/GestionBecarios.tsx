@@ -27,7 +27,7 @@ const GestionBecarios = () => {
   });
 
   return (
-    <Box sx={{ mt: -3, pb: 0 }}>
+    <Box sx={{ mt: 5, pb: 0, px: 5 }}>
       <Typography
         variant="h4"
         align="center"

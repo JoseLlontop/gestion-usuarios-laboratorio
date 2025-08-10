@@ -82,7 +82,7 @@ const GestionAdminBecarios = () => {
   };
 
   return (
-    <Box sx={{ mt: -3, pb: 0 }}>
+    <Box sx={{ mt: 5, pb: 0, px: 5 }}>
 
       <Box
         sx={{

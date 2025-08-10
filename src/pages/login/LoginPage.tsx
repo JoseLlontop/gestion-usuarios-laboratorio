@@ -55,7 +55,7 @@ const LoginPage: React.FC = () => {
         container
         component={Paper}
         elevation={16}
-        sx={{ borderRadius: 4, overflow: 'hidden', mt: 24, mx: 2 }}
+        sx={{ borderRadius: 4, overflow: 'hidden', mt: 36, mx: 2 }}
       >
         {/* Ilustración */}
         <Grid
