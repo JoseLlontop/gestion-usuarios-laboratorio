@@ -31,12 +31,16 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { subscribeAreas, Area } from '../../services/areas';
 
+import ModalBecasAdmin from '../../components/beca/ModalBecasAdmin';
+
 const GestionAdminBecarios = () => {
   const [becarios, setBecarios] = useState<Becario[]>([]);
   const [filtroNombre, setFiltroNombre] = useState('');
   const [filtroArea, setFiltroArea] = useState('');
   const [openModal, setOpenModal] = useState(false);
   const [currentBecario, setCurrentBecario] = useState<Becario | null>(null);
+
+  const [openBecasModal, setOpenBecasModal] = useState(false);
 
   // nuevo: modal de areas
   const [openAreasModal, setOpenAreasModal] = useState(false);
@@ -186,6 +190,15 @@ const GestionAdminBecarios = () => {
         >
           Administrar áreas
         </Button>
+
+        {/* BOTÓN nuevo para abrir modal de administración de becas */}
+        <Button
+          variant="outlined"
+          color="secondary"
+          onClick={() => setOpenBecasModal(true)}
+        >
+          Administrar becas
+        </Button>
       </Box>
 
       <TableContainer component={Paper} sx={{ boxShadow: 3 }}>
@@ -226,7 +239,7 @@ const GestionAdminBecarios = () => {
       </TableContainer>
 
       <ModalNuevoBecario open={openModal} onClose={() => { setOpenModal(false); setCurrentBecario(null); }} onSave={handleSaveBecario} becario={currentBecario} />
-
+      <ModalBecasAdmin open={openBecasModal} onClose={() => setOpenBecasModal(false)} />
       <ModalAreasAdmin open={openAreasModal} onClose={() => setOpenAreasModal(false)} />
     </Box>
   );
