@@ -1,16 +1,35 @@
+// src/pages/becario/GestionAdminBecarios.tsx
 import { useEffect, useState } from 'react';
-import { Box, Button, TextField, Select, MenuItem, InputLabel, FormControl, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, Paper, IconButton } from '@mui/material';
+import {
+  Box,
+  Button,
+  TextField,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography,
+  Paper,
+  IconButton
+} from '@mui/material';
 
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ModalNuevoBecario from '../../components/becario/ModalNuevoBecario';
+import ModalAreasAdmin from '../../components/area/ModalAreasAdmin';
 import { show_alerta } from '../../helpers/funcionSweetAlert';
 import { Becario } from '../../models/types';
 import { useNavigate } from 'react-router-dom';
 
-// Importamos el hook de autenticación
 import { useAuth } from '../../context/AuthContext';
+import { subscribeAreas, Area } from '../../services/areas';
 
 const GestionAdminBecarios = () => {
   const [becarios, setBecarios] = useState<Becario[]>([]);
@@ -19,21 +38,30 @@ const GestionAdminBecarios = () => {
   const [openModal, setOpenModal] = useState(false);
   const [currentBecario, setCurrentBecario] = useState<Becario | null>(null);
 
-  const navigate = useNavigate();
+  // nuevo: modal de areas
+  const [openAreasModal, setOpenAreasModal] = useState(false);
+  const [areas, setAreas] = useState<Area[]>([]);
 
-  // Extraemos logout desde el contexto
+  const navigate = useNavigate();
   const { logout } = useAuth();
 
   const API_URL = process.env.REACT_APP_BACKEND_API_URL as string;
 
-  // Fetch inicial de becarios
+  // Fetch inicial de becarios (tu mock)
   useEffect(() => {
-    //fetch(`${API_URL}/api/becarios`)
-    fetch('/becarios.json') // Usar un archivo local para pruebas
+    fetch('/becarios.json')
       .then(res => res.json())
       .then(data => setBecarios(data))
       .catch(err => console.error('Error cargando becarios:', err));
   }, [API_URL]);
+
+  // Suscripción a áreas para llenar el Select y mantener actualizado
+  useEffect(() => {
+    const unsub = subscribeAreas(items => {
+      setAreas(items);
+    });
+    return () => unsub();
+  }, []);
 
   // Filtrado por nombre/apellido y área
   const becariosFiltrados = becarios.filter(b => {
@@ -42,7 +70,7 @@ const GestionAdminBecarios = () => {
     return matchNombre && matchArea;
   });
 
-  // Guardar
+  // Guardar becario (mock actual)
   const handleSaveBecario = async (becario: Becario) => {
     try {
       const url = becario.id ? `${API_URL}/api/becarios/${becario.id}` : `${API_URL}/api/becarios/crear`;
@@ -68,7 +96,6 @@ const GestionAdminBecarios = () => {
     }
   };
 
-  // Eliminar
   const handleDeleteBecario = async (id: number) => {
     if (!window.confirm('¿Confirma eliminación?')) return;
     try {
@@ -83,7 +110,6 @@ const GestionAdminBecarios = () => {
 
   return (
     <Box sx={{ mt: 5, pb: 0, px: 5 }}>
-
       <Box
         sx={{
           display: 'flex',
@@ -96,10 +122,8 @@ const GestionAdminBecarios = () => {
           mb: 3
         }}
       >
-        {/* Espacio vacío para equilibrar */}
-        <Box sx={{ width: 48 /* anchura similar al botón */ }} />
+        <Box sx={{ width: 48 }} />
 
-        {/* Título con flexGrow para centrar */}
         <Typography
           variant="h4"
           sx={{ flexGrow: 1, textAlign: 'center', fontWeight: 'bold' }}
@@ -107,12 +131,11 @@ const GestionAdminBecarios = () => {
           Gestión de Becarios
         </Typography>
 
-        {/* Botón de Cerrar Sesión */}
         <Button
           variant="outlined"
           color="inherit"
           onClick={async () => {
-            navigate('/login-profesor', { replace: true }); 
+            navigate('/login-profesor', { replace: true });
             await logout();
           }}
         >
@@ -120,20 +143,13 @@ const GestionAdminBecarios = () => {
         </Button>
       </Box>
 
-      {/* Filtros con menor separación */}
-      <Box
-        display="flex"
-        alignItems="center"
-        mb={2}
-        gap={2}               // reduce el espacio
-        sx={{ flexWrap: 'wrap' }} // que bajen si falta espacio
-      >
+      <Box display="flex" alignItems="center" mb={2} gap={2} sx={{ flexWrap: 'wrap' }}>
         <TextField
           label="Buscar por nombre y apellido"
           value={filtroNombre}
           onChange={e => setFiltroNombre(e.target.value)}
           size="small"
-          sx={{ width: 260 }}  // Ajusta el ancho 
+          sx={{ width: 260 }}
         />
 
         <FormControl size="small" sx={{ minWidth: 180 }}>
@@ -145,14 +161,30 @@ const GestionAdminBecarios = () => {
             onChange={e => setFiltroArea(e.target.value)}
           >
             <MenuItem value="">Todas</MenuItem>
-            <MenuItem value="Desarrollo">Desarrollo</MenuItem>
-            <MenuItem value="Infraestructura">Infraestructura</MenuItem>
-            <MenuItem value="Ingenieria Social">Ingenieria Social</MenuItem>
+            {areas.map(a => (
+              <MenuItem key={a.id} value={a.nombre}>
+                {a.nombre}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
 
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => { setCurrentBecario(null); setOpenModal(true); }}>
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => { setCurrentBecario(null); setOpenModal(true); }}
+        >
           Nuevo Becario
+        </Button>
+
+        {/* BOTÓN para abrir modal de administración de áreas */}
+        <Button
+          variant="outlined"
+          color="primary"
+          onClick={() => setOpenAreasModal(true)}
+          sx={{ ml: "auto" }}
+        >
+          Administrar áreas
         </Button>
       </Box>
 
@@ -160,7 +192,7 @@ const GestionAdminBecarios = () => {
         <Table stickyHeader>
           <TableHead sx={{ backgroundColor: '#f5f5f5' }}>
             <TableRow>
-              {['#','Legajo','Apellido','Nombre','DNI','Móvil','Telegram','E‑mail','Año','Área','Beca','Acciones'].map(h => (
+              {['#','Legajo','Apellido','Nombre','DNI','Móvil','Telegram','E-mail','Año','Área','Beca','Acciones'].map(h => (
                 <TableCell key={h}>{h}</TableCell>
               ))}
             </TableRow>
@@ -194,6 +226,8 @@ const GestionAdminBecarios = () => {
       </TableContainer>
 
       <ModalNuevoBecario open={openModal} onClose={() => { setOpenModal(false); setCurrentBecario(null); }} onSave={handleSaveBecario} becario={currentBecario} />
+
+      <ModalAreasAdmin open={openAreasModal} onClose={() => setOpenAreasModal(false)} />
     </Box>
   );
 };

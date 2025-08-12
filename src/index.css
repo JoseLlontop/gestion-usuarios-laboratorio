@@ -1,0 +1,20 @@
+/* Para SweetAlert2 (si usás show_alerta basado en Swal) */
+.swal2-container {
+  z-index: 3000 !important; /* mayor que el Dialog de MUI (≈1300) */
+}
+
+/* Si usás SweetAlert2 con popups centradas, el popup también puede necesitar z-index */
+.swal2-popup {
+  z-index: 3001 !important;
+}
+
+/* Si usás react-toastify -- ejemplo */
+.Toastify__toast-container {
+  z-index: 3000 !important;
+}
+
+/* Seguridad: por si usás otros toasts que inyectan en body */
+#snackbar, .toast, .Toastify, .swal2-container {
+  /* solo elevar en caso de que exista, no rompe si no está */
+  z-index: 3000 !important;
+}
