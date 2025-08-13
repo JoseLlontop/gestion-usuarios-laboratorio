@@ -1,33 +1,69 @@
-import { useEffect, useState } from 'react';
-import { Box, TextField, Select, MenuItem, InputLabel, FormControl, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, Paper } from '@mui/material';
-import { Becario } from '../../models/types';
+import React, { useEffect, useState } from 'react';
+import {
+  Box,
+  TextField,
+  Select,
+  MenuItem,
+  InputLabel,
+  FormControl,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography,
+  Paper,
+  CircularProgress,
+  Stack,
+} from '@mui/material';
 
-const GestionBecarios = () => {
-  const [becarios, setBecarios] = useState<Becario[]>([]);
+import { subscribeBecarios } from '../../services/becarios';
+import { subscribeAreas, Area } from '../../services/areas';
+
+// Tipo que retorna el service (incluye id)
+import { Becario as SvcBecarioType } from '../../services/becarios';
+
+const GestionBecarios: React.FC = () => {
+  // lista cruda desde el service (contiene id y campos adicionales como areaId, areaNombre, etc)
+  const [svcItems, setSvcItems] = useState<SvcBecarioType[]>([]);
+  // lista de áreas para el select de filtro
+  const [areas, setAreas] = useState<Area[]>([]);
+
+  // estados UI
   const [filtroNombre, setFiltroNombre] = useState('');
-  const [filtroArea, setFiltroArea] = useState('');
+  const [filtroArea, setFiltroArea] = useState(''); // guardamos areaId aquí
+  const [loading, setLoading] = useState(true);
 
-  // URL de la API
-  const API_URL = process.env.REACT_APP_BACKEND_API_URL as string;
-
-  // Fetch inicial de becarios
+  // Suscribirse a becarios (realtime)
   useEffect(() => {
-    //fetch(`${API_URL}/api/becarios`)
-    fetch('/becarios.json') // Usar un archivo local para pruebas
-      .then(res => res.json())
-      .then(data => setBecarios(data))
-      .catch(err => console.error('Error cargando becarios:', err));
-  }, [API_URL]);
+    setLoading(true);
+    const unsub = subscribeBecarios((items: SvcBecarioType[]) => {
+      setSvcItems(items);
+      setLoading(false);
+    });
 
-  // Filtrado por nombre/apellido y área
-  const becariosFiltrados = becarios.filter(b => {
-    const matchNombre = (`${b.nombre} ${b.apellido}`).toLowerCase().includes(filtroNombre.toLowerCase());
-    const matchArea = filtroArea ? b.areaInscripcion === filtroArea : true;
+    return () => unsub();
+  }, []);
+
+  // Suscribirse a áreas para el select
+  useEffect(() => {
+    const unsubA = subscribeAreas(items => setAreas(items));
+    return () => unsubA();
+  }, []);
+
+  // Filtrado: aplicamos los filtros sobre svcItems (así podemos usar areaId y tener acceso al id)
+  const itemsFiltrados = svcItems.filter(item => {
+    // name para búsqueda
+    const name = `${item.nombre ?? ''} ${item.apellido ?? ''}`.toLowerCase();
+    const matchNombre = name.includes(filtroNombre.toLowerCase());
+    const matchArea = filtroArea ? ((item as any).areaId === filtroArea) : true;
     return matchNombre && matchArea;
   });
 
   return (
     <Box sx={{ mt: 5, pb: 0, px: 5 }}>
+      {/* Encabezado */}
       <Typography
         variant="h4"
         align="center"
@@ -42,16 +78,18 @@ const GestionBecarios = () => {
       >
         Listado de Becarios
       </Typography>
-      <Box display="flex" justifyContent="start" alignItems="center" mb={2} gap={2}>
+
+      {/* Filtros */}
+      <Box display="flex" justifyContent="start" alignItems="center" mb={2} gap={2} flexWrap="wrap">
         <TextField
           placeholder="Buscar por nombre o apellido"
           value={filtroNombre}
           onChange={e => setFiltroNombre(e.target.value)}
           size="small"
-          sx={{ width: 260 }}  // Ajusta el ancho 
+          sx={{ width: 260 }}
         />
 
-        <FormControl size="small" sx={{ minWidth: 180 }}>  
+        <FormControl size="small" sx={{ minWidth: 220 }}>
           <InputLabel id="select-area-label">Filtrar por área</InputLabel>
           <Select
             labelId="select-area-label"
@@ -60,49 +98,63 @@ const GestionBecarios = () => {
             onChange={e => setFiltroArea(e.target.value)}
           >
             <MenuItem value="">Todas</MenuItem>
-            <MenuItem value="Desarrollo">Desarrollo</MenuItem>
-            <MenuItem value="Infraestructura">Infraestructura</MenuItem>
-            <MenuItem value="Ingenieria Social">Ingenieria Social</MenuItem>
+            {areas.map(a => (
+              <MenuItem key={a.id} value={a.id}>
+                {a.nombre}
+              </MenuItem>
+            ))}
           </Select>
         </FormControl>
       </Box>
 
-      <TableContainer component={Paper} sx={{ boxShadow: 3 }}>
-        <Table stickyHeader>
-          <TableHead sx={{ backgroundColor: '#f5f5f5' }}>
-            <TableRow>
-              <TableCell>#</TableCell>
-              <TableCell>Legajo</TableCell>
-              <TableCell>Apellido</TableCell>
-              <TableCell>Nombre</TableCell>
-              <TableCell>DNI</TableCell>
-              <TableCell>Móvil</TableCell>
-              <TableCell>Telegram</TableCell>
-              <TableCell>E‑mail</TableCell>
-              <TableCell>Año</TableCell>
-              <TableCell>Área</TableCell>
-              <TableCell>Beca</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {becariosFiltrados.map((b, i) => (
-              <TableRow key={b.id}>
-                <TableCell>{i + 1}</TableCell>
-                <TableCell>{b.legajo}</TableCell>
-                <TableCell>{b.apellido}</TableCell>
-                <TableCell>{b.nombre}</TableCell>
-                <TableCell>{b.dni}</TableCell>
-                <TableCell>{b.nroMovil}</TableCell>
-                <TableCell>{b.usuarioTelegram}</TableCell>
-                <TableCell>{b.email}</TableCell>
-                <TableCell>{b.anioCurso}</TableCell>
-                <TableCell>{b.areaInscripcion}</TableCell>
-                <TableCell>{b.beca}</TableCell>
+      {/* Contenido: tabla o loader */}
+      {loading ? (
+        <Stack alignItems="center" sx={{ py: 6 }}>
+          <CircularProgress />
+        </Stack>
+      ) : (
+        <TableContainer component={Paper} sx={{ boxShadow: 3 }}>
+          <Table stickyHeader>
+            <TableHead sx={{ backgroundColor: '#f5f5f5' }}>
+              <TableRow>
+                <TableCell>#</TableCell>
+                <TableCell>Legajo</TableCell>
+                <TableCell>Apellido</TableCell>
+                <TableCell>Nombre</TableCell>
+                <TableCell>DNI</TableCell>
+                <TableCell>Móvil</TableCell>
+                <TableCell>Telegram</TableCell>
+                <TableCell>E-mail</TableCell>
+                <TableCell>Año</TableCell>
+                <TableCell>Área</TableCell>
+                <TableCell>Beca</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+
+            <TableBody>
+              {itemsFiltrados.map((i, idx) => (
+                <TableRow key={i.id ?? idx}>
+                  <TableCell>{idx + 1}</TableCell>
+                  <TableCell>{i.legajo ?? '—'}</TableCell>
+                  <TableCell>{i.apellido ?? '—'}</TableCell>
+                  <TableCell>{i.nombre ?? '—'}</TableCell>
+                  <TableCell>{i.dni ?? '—'}</TableCell>
+                  <TableCell>{i.nroMovil ?? '—'}</TableCell>
+                  <TableCell>{i.usuarioTelegram ?? '—'}</TableCell>
+                  <TableCell>{i.email ?? '—'}</TableCell>
+
+                  {/* anioCurso puede venir como number o string — lo forzamos a string al mostrar */}
+                  <TableCell>{String(i.anioCurso ?? '—')}</TableCell>
+
+                  {/* mostrar nombre de área y beca (denormalizados) */}
+                  <TableCell>{(i as any).areaNombre ?? '—'}</TableCell>
+                  <TableCell>{(i as any).becaNombre ?? '—'}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
     </Box>
   );
 };

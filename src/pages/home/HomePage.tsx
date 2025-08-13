@@ -35,6 +35,8 @@ import assets from '../../assets'; // mantén la ruta que ya usa tu proyecto
 import ModalNuevoBecario from '../../components/becario/ModalNuevoBecario';
 import { Becario } from '../../models/types';
 import { show_alerta } from '../../helpers/funcionSweetAlert';
+import { createBecario as svcCreateBecario } from '../../services/becarios';
+import { mapAppToSvc, removeUndefined } from '../../utils/mappers'; 
 
 const theme = createTheme({
   palette: {
@@ -73,15 +75,20 @@ export default function HomePage() {
 
   const handleSaveBecario = async (becario: Becario) => {
     try {
-      // Aquí es donde integrarías la llamada a tu API real.
-      // Por compatibilidad con tu código actual uso show_alerta (sweetalert wrapper)
-      show_alerta('Becario registrado con éxito', 'success');
+      // mapeo del objeto UI al formato que espera el service (igual que admin)
+      const svcObj = mapAppToSvc(becario);
+      const payload = removeUndefined(svcObj);
+
+      // Esperamos la creación — si falla va al catch
+      const newId = await svcCreateBecario(payload);
+      console.log('Becario creado con id:', newId);
+
+      show_alerta('Becario registrado con éxito', 'success')
+      // Notificar y cerrar modal *solo si OK*
       setOpenModal(false);
-      setSnackbar({ open: true, message: 'Becario registrado con éxito', severity: 'success' });
-    } catch (err) {
-      console.error(err);
-      show_alerta('Error al registrar becario', 'error');
-      setSnackbar({ open: true, message: 'Error al registrar becario', severity: 'error' });
+    } catch (e) {
+      console.error('Error creando becario desde home:', e);
+      show_alerta('Error al registrar el becario', 'error'); 
     }
   };
 

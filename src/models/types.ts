@@ -1,5 +1,4 @@
 export interface Becario {
-  id: number;
   legajo: string;
   apellido: string;
   nombre: string;
@@ -8,10 +7,9 @@ export interface Becario {
   usuarioTelegram: string;
   email: string;
   anioCurso: string;
-  areaInscripcion: string;
-  beca: string;
+  areaInscripcion: string; // guardamos nombre visible del área en la UI
+  beca: string;            // guardamos nombre visible de la beca en la UI
 }
-
 
 export interface Profesor {
   id: number;
