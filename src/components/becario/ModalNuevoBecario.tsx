@@ -73,6 +73,7 @@ const ModalNuevoBecario: React.FC<ModalNuevoBecarioProps> = ({ open, onClose, on
     const isEmpty = value === undefined || value === null || String(value).trim() === '';
 
     switch (name) {
+      // campos texto obligatorios simples
       case 'legajo':
       case 'nombre':
       case 'apellido':
@@ -85,8 +86,9 @@ const ModalNuevoBecario: React.FC<ModalNuevoBecarioProps> = ({ open, onClose, on
         if (isEmpty) {
           msg = 'Campo requerido';
         } else {
+          // aceptar sólo enteros entre 1 y 5 (ajustado)
           const n = Number(value);
-          if (Number.isNaN(n) || n < 1 || n > 10) msg = 'Ingrese un año válido (1-10)';
+          if (!Number.isInteger(n) || n < 1 || n > 5) msg = 'Ingrese un año válido (1-5)';
         }
         break;
       }
@@ -102,13 +104,30 @@ const ModalNuevoBecario: React.FC<ModalNuevoBecarioProps> = ({ open, onClose, on
         break;
 
       case 'nroMovil':
-        if (String(value).trim() !== '' && !/^\d+$/.test(String(value))) {
-          msg = 'Solo números';
+        // ahora obligatorio y validado: solo números y longitud razonable (8-15)
+        if (isEmpty) {
+          msg = 'Campo requerido';
+        } else if (!/^\d{8,15}$/.test(String(value))) {
+          msg = 'Número inválido (solo dígitos, 8-15 caracteres)';
+        }
+        break;
+
+      case 'usuarioTelegram':
+        // obligatorio, acepta con o sin @, longitud 5-32, letras/números/underscore
+        if (isEmpty) {
+          msg = 'Campo requerido';
+        } else {
+          const val = String(value).trim();
+          const re = /^@?[a-zA-Z0-9_]{5,32}$/;
+          if (!re.test(val)) msg = 'Usuario Telegram inválido (5-32 chars, letras/números/_)';
         }
         break;
 
       case 'email':
-        if (!isEmpty) {
+        // ahora obligatorio y validación básica de email
+        if (isEmpty) {
+          msg = 'Campo requerido';
+        } else {
           // validación simple de email
           const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
           if (!re.test(String(value))) msg = 'Email inválido';
@@ -124,7 +143,11 @@ const ModalNuevoBecario: React.FC<ModalNuevoBecarioProps> = ({ open, onClose, on
   };
 
   const validateForm = (): boolean => {
-    const requiredFields = ['legajo', 'nombre', 'apellido', 'dni', 'anioCurso', 'areaInscripcion', 'beca'];
+    // ahora todos estos campos son obligatorios
+    const requiredFields = [
+      'legajo', 'nombre', 'apellido', 'dni', 'anioCurso',
+      'nroMovil', 'usuarioTelegram', 'email', 'areaInscripcion', 'beca'
+    ];
     let valid = true;
 
     // validar campos obligatorios y algunos opcionales con reglas
@@ -132,10 +155,6 @@ const ModalNuevoBecario: React.FC<ModalNuevoBecarioProps> = ({ open, onClose, on
       const ok = validateField(f, (form as any)[f]);
       if (!ok) valid = false;
     });
-
-    // validar email, nroMovil (si hay valor)
-    validateField('email', form.email);
-    validateField('nroMovil', form.nroMovil);
 
     return valid;
   };
@@ -182,7 +201,7 @@ const ModalNuevoBecario: React.FC<ModalNuevoBecarioProps> = ({ open, onClose, on
               label="Año"
               name="anioCurso"
               type="number"
-              inputProps={{ min: 1, max: 10 }}
+              inputProps={{ min: 1, max: 5, step: 1 }}
               value={String(form.anioCurso ?? '')}
               onChange={handleInputChange}
               onBlur={(e) => validateField(e.target.name, e.target.value)}
@@ -243,6 +262,7 @@ const ModalNuevoBecario: React.FC<ModalNuevoBecarioProps> = ({ open, onClose, on
               onChange={handleInputChange}
               onBlur={(e) => validateField(e.target.name, e.target.value)}
               fullWidth
+              required
               error={!!errors.nroMovil}
               helperText={errors.nroMovil}
             />
@@ -256,8 +276,9 @@ const ModalNuevoBecario: React.FC<ModalNuevoBecarioProps> = ({ open, onClose, on
               onChange={handleInputChange}
               onBlur={(e) => validateField(e.target.name, e.target.value)}
               fullWidth
+              required
               error={!!errors.usuarioTelegram}
-              helperText={errors.usuarioTelegram}
+              helperText={errors.usuarioTelegram || 'Puede incluir @ o no (5-32 caracteres)'}
             />
           </Grid>
 
@@ -270,6 +291,7 @@ const ModalNuevoBecario: React.FC<ModalNuevoBecarioProps> = ({ open, onClose, on
               onChange={handleInputChange}
               onBlur={(e) => validateField(e.target.name, e.target.value)}
               fullWidth
+              required
               error={!!errors.email}
               helperText={errors.email}
             />
@@ -291,7 +313,6 @@ const ModalNuevoBecario: React.FC<ModalNuevoBecarioProps> = ({ open, onClose, on
                 <MenuItem value=""></MenuItem>
                 {areas.map(area => <MenuItem key={area.id} value={area.nombre}>{area.nombre}</MenuItem>)}
               </Select>
-              {/* helperText manual: */}
               {errors.areaInscripcion ? <div style={{ color: '#d32f2f', fontSize: '0.75rem', marginTop: 6 }}>{errors.areaInscripcion}</div> : null}
             </FormControl>
           </Grid>
