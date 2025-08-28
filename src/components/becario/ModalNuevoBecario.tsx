@@ -36,7 +36,7 @@ const ModalNuevoBecario: React.FC<ModalNuevoBecarioProps> = ({ open, onClose, on
   const [becas, setBecas] = useState<{ id: string; nombre: string }[]>([]);
   const [saving, setSaving] = useState(false);
 
-  // errores: clave = nombre del campo, valor = mensaje de error ('' sin error)
+  // errores: clave = nombre del campo, valor = mensaje de error ('')
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -54,9 +54,25 @@ const ModalNuevoBecario: React.FC<ModalNuevoBecarioProps> = ({ open, onClose, on
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value } as AppBecario));
+    let val = value;
+
+    // Campos numéricos: limpiamos cualquier carácter no-dígito y acotamos longitud
+    const numericFields = ['legajo', 'dni', 'nroMovil'];
+    if (numericFields.includes(name)) {
+      val = String(val).replace(/\D/g, '');
+      if (name === 'legajo') val = val.slice(0, 7);
+      if (name === 'dni') val = val.slice(0, 8);
+      if (name === 'nroMovil') val = val.slice(0, 10);
+    }
+
+    // Limitar longitud de nombre/apellido
+    if (name === 'nombre' || name === 'apellido') {
+      val = String(val).slice(0, 20);
+    }
+
+    setForm(prev => ({ ...prev, [name]: val } as AppBecario));
     // validamos al tipear (feedback inmediato)
-    validateField(name, value);
+    validateField(name, val);
   };
 
   const handleSelectChange = (e: SelectChangeEvent<string>) => {
@@ -75,8 +91,22 @@ const ModalNuevoBecario: React.FC<ModalNuevoBecarioProps> = ({ open, onClose, on
     switch (name) {
       // campos texto obligatorios simples
       case 'legajo':
+        if (isEmpty) msg = 'Campo requerido';
+        else if (!/^\d{1,7}$/.test(String(value))) msg = 'Legajo inválido (solo números, hasta 7 dígitos)';
+        break;
+
       case 'nombre':
-      case 'apellido':
+      case 'apellido': {
+        if (isEmpty) msg = 'Campo requerido';
+        else {
+          const val = String(value).trim();
+          // permitir letras (con tildes), espacios, guiones y apóstrofe, entre 2 y 50 caracteres
+          const re = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s'-]{2,20}$/;
+          if (!re.test(val)) msg = 'Nombre/Apellido inválido (2-20 caracteres, solo letras y espacios)';
+        }
+        break;
+      }
+
       case 'areaInscripcion':
       case 'beca':
         if (isEmpty) msg = 'Campo requerido';
@@ -96,19 +126,17 @@ const ModalNuevoBecario: React.FC<ModalNuevoBecarioProps> = ({ open, onClose, on
       case 'dni':
         if (isEmpty) {
           msg = 'Campo requerido';
-        } else if (!/^\d+$/.test(String(value))) {
-          msg = 'Solo números';
-        } else if (String(value).length < 7) {
-          msg = 'DNI incompleto';
+        } else if (!/^\d{8}$/.test(String(value))) {
+          msg = 'DNI inválido (debe tener exactamente 8 dígitos)';
         }
         break;
 
       case 'nroMovil':
-        // ahora obligatorio y validado: solo números y longitud razonable (8-15)
+        // obligatorio y validado: exactamente 10 dígitos
         if (isEmpty) {
           msg = 'Campo requerido';
-        } else if (!/^\d{8,15}$/.test(String(value))) {
-          msg = 'Número inválido (solo dígitos, 8-15 caracteres)';
+        } else if (!/^\d{10}$/.test(String(value))) {
+          msg = 'Número inválido (debe tener exactamente 10 dígitos)';
         }
         break;
 
@@ -192,7 +220,8 @@ const ModalNuevoBecario: React.FC<ModalNuevoBecarioProps> = ({ open, onClose, on
               fullWidth
               required
               error={!!errors.legajo}
-              helperText={errors.legajo}
+              helperText={errors.legajo || 'Hasta 7 dígitos (solo números)'}
+              inputProps={{ inputMode: 'numeric', pattern: '\\d*', maxLength: 7 }}
             />
           </Grid>
 
@@ -222,7 +251,8 @@ const ModalNuevoBecario: React.FC<ModalNuevoBecarioProps> = ({ open, onClose, on
               fullWidth
               required
               error={!!errors.nombre}
-              helperText={errors.nombre}
+              helperText={errors.nombre || '2-20 caracteres (letras, espacios)'}
+              inputProps={{ maxLength: 20 }}
             />
           </Grid>
 
@@ -236,7 +266,8 @@ const ModalNuevoBecario: React.FC<ModalNuevoBecarioProps> = ({ open, onClose, on
               fullWidth
               required
               error={!!errors.apellido}
-              helperText={errors.apellido}
+              helperText={errors.apellido || '2-20 caracteres (letras, espacios)'}
+              inputProps={{ maxLength: 20 }}
             />
           </Grid>
 
@@ -250,7 +281,8 @@ const ModalNuevoBecario: React.FC<ModalNuevoBecarioProps> = ({ open, onClose, on
               fullWidth
               required
               error={!!errors.dni}
-              helperText={errors.dni}
+              helperText={errors.dni || '8 dígitos (sin puntos)'}
+              inputProps={{ inputMode: 'numeric', pattern: '\\d*', maxLength: 8 }}
             />
           </Grid>
 
@@ -264,7 +296,8 @@ const ModalNuevoBecario: React.FC<ModalNuevoBecarioProps> = ({ open, onClose, on
               fullWidth
               required
               error={!!errors.nroMovil}
-              helperText={errors.nroMovil}
+              helperText={errors.nroMovil || '10 dígitos (ej: 11xxxxxxxx)'}
+              inputProps={{ inputMode: 'numeric', pattern: '\\d*', maxLength: 10 }}
             />
           </Grid>
 
