@@ -6,8 +6,6 @@ import {
   UserCredential,
 } from "firebase/auth";
 import { auth } from "../firebase";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "../firebase";
 
 export type AuthUser = User | null;
 
