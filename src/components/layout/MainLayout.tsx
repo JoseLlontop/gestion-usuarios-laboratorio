@@ -28,9 +28,11 @@ const MainLayout = () => {
           component="main"
           sx={{
             flexGrow: 1,
-            width: { xs: "100%", md: `calc(100% - ${sizeConfigs.sidebar.width})` },
+            width: "100%", // <- ocupar todo el ancho y dejar el margen a la izquierda en md+
+            ml: { md: sizeConfigs.sidebar.width }, // <- desplaza el main para no quedar bajo la sidebar
             minHeight: "100vh",
             bgcolor: colorConfigs.mainBg,
+            p: 0,
           }}
         >
           <Outlet />

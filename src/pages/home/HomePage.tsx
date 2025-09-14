@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink } from "react-router-dom";
 import {
   ThemeProvider,
   createTheme,
@@ -31,64 +31,52 @@ import {
   Copyright as CopyrightIcon,
 } from "@mui/icons-material";
 
-import assets from '../../assets'; // mantén la ruta que ya usa tu proyecto
-import ModalNuevoBecario from '../../components/becario/ModalNuevoBecario';
-import { Becario } from '../../models/types';
-import { show_alerta } from '../../helpers/funcionSweetAlert';
-import { createBecario as svcCreateBecario } from '../../services/becarios';
-import { mapAppToSvc, removeUndefined } from '../../utils/mappers'; 
+import assets from "../../assets";
+import ModalNuevoBecario from "../../components/becario/ModalNuevoBecario";
+import { Becario } from "../../models/types";
+import { show_alerta } from "../../helpers/funcionSweetAlert";
+import { createBecario as svcCreateBecario } from "../../services/becarios";
+import { mapAppToSvc, removeUndefined } from "../../utils/mappers";
 
 const theme = createTheme({
   palette: {
-    mode: 'light',
-    primary: { main: '#233044' }, // teal
-    secondary: { main: '#8b5cf6' }, // violet
-    background: { default: '#fbfbfd' },
+    mode: "light",
+    primary: { main: "#233044" },
+    secondary: { main: "#8b5cf6" },
+    background: { default: "#fbfbfd" },
   },
   shape: { borderRadius: 14 },
   components: {
     MuiButton: {
-      styleOverrides: {
-        root: {
-          textTransform: 'none',
-          fontWeight: 700,
-        },
-      },
+      styleOverrides: { root: { textTransform: "none", fontWeight: 700 } },
     },
     MuiCard: {
-      styleOverrides: {
-        root: {
-          border: '1px solid rgba(2,6,23,0.06)',
-        },
-      },
+      styleOverrides: { root: { border: "1px solid rgba(2,6,23,0.06)" } },
     },
   },
 });
 
 export default function HomePage() {
   const [openModal, setOpenModal] = React.useState(false);
-  const [snackbar, setSnackbar] = React.useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' | 'warning' }>(
-    { open: false, message: '', severity: 'success' }
-  );
+  const [snackbar, setSnackbar] = React.useState<{
+    open: boolean;
+    message: string;
+    severity: "success" | "error" | "info" | "warning";
+  }>({ open: false, message: "", severity: "success" });
 
-  const mdUp = useMediaQuery(theme.breakpoints.up('md'));
+  const mdUp = useMediaQuery(theme.breakpoints.up("md"));
 
   const handleSaveBecario = async (becario: Becario) => {
     try {
-      // mapeo del objeto UI al formato que espera el service (igual que admin)
       const svcObj = mapAppToSvc(becario);
       const payload = removeUndefined(svcObj);
-
-      // Esperamos la creación — si falla va al catch
       const newId = await svcCreateBecario(payload);
-      console.log('Becario creado con id:', newId);
-
-      show_alerta('Becario registrado con éxito', 'success')
-      // Notificar y cerrar modal *solo si OK*
+      console.log("Becario creado con id:", newId);
+      show_alerta("Becario registrado con éxito", "success");
       setOpenModal(false);
     } catch (e) {
-      console.error('Error creando becario desde home:', e);
-      show_alerta('Error al registrar el becario', 'error'); 
+      console.error("Error creando becario desde home:", e);
+      show_alerta("Error al registrar el becario", "error");
     }
   };
 
@@ -96,16 +84,14 @@ export default function HomePage() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
 
-      {/* HERO */}
+      {/* HEADER — ahora se comporta como el contenido principal (nunca se mete bajo el sidebar) */}
       <Box
         component="header"
         sx={{
-          position: 'relative',
-          overflow: 'hidden',
-          width: '100vw',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          boxSizing: 'border-box',
+          position: "relative",
+          overflow: "hidden",
+          width: "100%",
+          boxSizing: "border-box",
           py: { xs: 6, md: 10 },
           mb: { xs: 4, md: 6 },
           background: `
@@ -113,19 +99,11 @@ export default function HomePage() {
             radial-gradient(680px 300px at 92% 12%, rgba(139,92,246,0.22), transparent),
             linear-gradient(180deg, rgba(35,48,68,0.08), rgba(35,48,68,0.02))
           `,
-          backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'center',
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "center",
         }}
       >
-        <Container
-          maxWidth="lg"
-          disableGutters
-          sx={{
-            px: { xs: 2, md: 3 },
-            py: 0,           // elimina el padding vertical
-            border: 'none',
-          }}
-        >
+        <Container maxWidth="xl" disableGutters sx={{ px: { xs: 2, md: 4 } }}>
           <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
             <RocketIcon color="primary" />
             <Typography variant="overline" color="text.secondary">
@@ -134,64 +112,54 @@ export default function HomePage() {
           </Stack>
 
           <Typography
-            variant={mdUp ? 'h3' : 'h4'}
+            variant={mdUp ? "h3" : "h4"}
             component="h1"
             sx={{ fontWeight: 800, lineHeight: 1.05, mb: 2 }}
           >
             Laboratorio de Innovaciones en Sistemas de Información
           </Typography>
 
-          <Typography
-            variant="body1"
-            color="text.secondary"
-            sx={{ maxWidth: 920, mb: 3 }}
-          >
-            Espacio académico donde estudiantes y docentes impulsan proyectos reales
-            en Ingeniería Social, Infraestructura y Desarrollo de Software. Encontrá
-            oportunidades, colaborá en investigaciones y sumá experiencia.
+          <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 920, mb: 3 }}>
+            Espacio académico donde estudiantes y docentes impulsan proyectos reales en Ingeniería
+            Social, Infraestructura y Desarrollo de Software. Encontrá oportunidades, colaborá en
+            investigaciones y sumá experiencia.
           </Typography>
 
-          <Stack
-            direction={{ xs: 'column', sm: 'row' }}
-            spacing={1.5}
-            sx={{ alignItems: 'flex-start' }}
-          >
-            <Chip
-              icon={<ScienceIcon />}
-              label="Ingeniería Social"
-              color="secondary"
-              variant="outlined"
-              sx={{ mr: 1 }}
-            />
-            <Chip
-              icon={<EngineeringIcon />}
-              label="Infraestructura"
-              color="primary"
-              variant="outlined"
-              sx={{ mr: 1 }}
-            />
-            <Chip
-              icon={<SchoolIcon />}
-              label="Desarrollo de Software"
-              variant="outlined"
-              sx={{ mr: 1 }}
-            />
+          {/* Chips responsivos */}
+          <Stack direction="row" useFlexGap flexWrap="wrap" sx={{ gap: 1.25 }}>
+            <Chip icon={<ScienceIcon />} label="Ingeniería Social" color="secondary" variant="outlined" />
+            <Chip icon={<EngineeringIcon />} label="Infraestructura" color="primary" variant="outlined" />
+            <Chip icon={<SchoolIcon />} label="Desarrollo de Software" variant="outlined" />
           </Stack>
         </Container>
       </Box>
 
-      <Container maxWidth="lg" sx={{ border: 'none' }}>
-        {/* Cards principales */}
-        <Grid container spacing={4}>
+      {/* BLOQUES PRINCIPALES */}
+      <Container maxWidth="xl" sx={{ px: { xs: 2, md: 4 }, pb: { xs: 4, md: 6 } }}>
+        <Grid
+          container
+          columns={12}
+          columnSpacing={{ xs: 0, sm: 3, md: 5, lg: 6 }}
+          rowSpacing={{ xs: 3, sm: 3, md: 4 }}
+          alignItems="stretch"
+        >
           <Grid item xs={12} md={6}>
-            <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', transition: 'transform .18s ease', '&:hover': { transform: 'translateY(-6px)' } }}>
-              <CardActionArea onClick={() => setOpenModal(true)} sx={{ display: 'block' }}>
+            <Card
+              sx={{
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                transition: "transform .18s ease",
+                "&:hover": { transform: "translateY(-6px)" },
+              }}
+            >
+              <CardActionArea onClick={() => setOpenModal(true)} sx={{ display: "block" }}>
                 <CardMedia
                   component="img"
                   height="220"
-                  image={assets?.images?.imagen_becario ?? '/placeholder-becario.png'}
+                  image={assets?.images?.imagen_becario ?? "/placeholder-becario.png"}
                   alt="Acceso Becario"
-                  sx={{ objectFit: 'cover' }}
+                  sx={{ objectFit: "cover" }}
                 />
                 <CardContent sx={{ pb: 0 }}>
                   <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
@@ -201,7 +169,8 @@ export default function HomePage() {
                     </Typography>
                   </Stack>
                   <Typography variant="body1" color="text.secondary">
-                    Registrate como becario, elegí tu área de interés y formá parte de los proyectos activos del laboratorio.
+                    Registrate como becario, elegí tu área de interés y formá parte de los proyectos
+                    activos del laboratorio.
                   </Typography>
                 </CardContent>
               </CardActionArea>
@@ -214,14 +183,22 @@ export default function HomePage() {
           </Grid>
 
           <Grid item xs={12} md={6}>
-            <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', transition: 'transform .18s ease', '&:hover': { transform: 'translateY(-6px)' } }}>
+            <Card
+              sx={{
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                transition: "transform .18s ease",
+                "&:hover": { transform: "translateY(-6px)" },
+              }}
+            >
               <CardActionArea component={RouterLink} to="/login-profesor">
                 <CardMedia
                   component="img"
                   height="220"
-                  image={assets?.images?.imagen_profesor ?? '/placeholder-profesor.png'}
+                  image={assets?.images?.imagen_profesor ?? "/placeholder-profesor.png"}
                   alt="Acceso Profesor"
-                  sx={{ objectFit: 'cover' }}
+                  sx={{ objectFit: "cover" }}
                 />
                 <CardContent sx={{ pb: 0 }}>
                   <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
@@ -231,7 +208,8 @@ export default function HomePage() {
                     </Typography>
                   </Stack>
                   <Typography variant="body1" color="text.secondary">
-                    Docentes y administradores: iniciá sesión para gestionar becarios, proyectos y recursos del laboratorio.
+                    Docentes y administradores: iniciá sesión para gestionar becarios, proyectos y
+                    recursos del laboratorio.
                   </Typography>
                 </CardContent>
               </CardActionArea>
@@ -243,67 +221,85 @@ export default function HomePage() {
             </Card>
           </Grid>
         </Grid>
+      </Container>
 
-        {/* Footer */}
-        <Box component="footer" sx={{
-          width: '100vw',
-          position: 'relative',
-          left: '50%',
-          right: '50%',
-          marginLeft: '-50vw',
-          marginRight: '-50vw',
+      {/* FOOTER — igual que el contenido principal (no se mete bajo el sidebar) */}
+      <Box
+        component="footer"
+        sx={{
+          position: "relative",
+          width: "100%",
           py: { xs: 3, md: 3 },
-          mt: 6,
-          bgcolor: '#000000',
-          color: 'rgba(255,255,255,0.95)'
-        }}>
-          <Container maxWidth="lg" sx={{ px: { xs: 2, md: 3 } }}>
-            <Divider sx={{ mb: 2 }} />
+          mt: { xs: 2, md: 3 },
+          bgcolor: "#000",
+          color: "rgba(255,255,255,0.95)",
+          boxSizing: "border-box",
+          overflowX: "clip",
+        }}
+      >
+        <Container maxWidth="xl" disableGutters sx={{ px: { xs: 2, md: 4 } }}>
+          <Divider sx={{ mb: 2, borderColor: "rgba(255,255,255,0.18)" }} />
 
-            <Grid container spacing={4} alignItems="flex-start">
-              <Grid item xs={12} md={8}>
-                <Stack spacing={1}>
-                  <Typography variant="h6" sx={{ fontWeight: 800, color: 'inherit' }}>
-                    LINSI - UTN La Plata
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.75)' }}>
-                    Laboratorio de Innovaciones en Sistemas de Información. Comunidad académica creando soluciones reales.
-                  </Typography>
-                </Stack>
-              </Grid>
-
-              <Grid item xs={12} md={4}>
-                <Typography variant="subtitle2" sx={{ mb: 1.5, opacity: 0.9 }}>
-                  Sitios
+          <Grid container spacing={4} alignItems="flex-start">
+            <Grid item xs={12} md={8}>
+              <Stack spacing={1}>
+                <Typography variant="h6" sx={{ fontWeight: 800, color: "inherit" }}>
+                  LINSI - UTN La Plata
                 </Typography>
-                <Stack spacing={1}>
-                  <a href="https://www.frlp.utn.edu.ar" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>
-                    Universidad - UTN FRLP
-                  </a>
-                  <a href="http://www.linsi.edu.ar" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>
-                    Laboratorio LINSI
-                  </a>
-                </Stack>
-              </Grid>
+                <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.75)" }}>
+                  Laboratorio de Innovaciones en Sistemas de Información. Comunidad académica creando soluciones reales.
+                </Typography>
+              </Stack>
             </Grid>
 
-            <Stack direction="row" gap={1} alignItems="center" sx={{ mt: 3, opacity: 0.8 }}>
-              <CopyrightIcon sx={{ fontSize: 16 }} />
-              <Typography variant="caption">{new Date().getFullYear()} LINSI - UTN La Plata. Todos los derechos reservados.</Typography>
-            </Stack>
-          </Container>
-        </Box>
+            <Grid item xs={12} md={4}>
+              <Typography variant="subtitle2" sx={{ mb: 1.5, opacity: 0.9 }}>
+                Sitios
+              </Typography>
+              <Stack spacing={1}>
+                <a href="https://www.frlp.utn.edu.ar" target="_blank" rel="noopener noreferrer" style={{ color: "inherit", textDecoration: "none" }}>
+                  Universidad - UTN FRLP
+                </a>
+                <a href="http://www.linsi.edu.ar" target="_blank" rel="noopener noreferrer" style={{ color: "inherit", textDecoration: "none" }}>
+                  Laboratorio LINSI
+                </a>
+              </Stack>
+            </Grid>
+          </Grid>
 
-        {/* Modal */}
-        <ModalNuevoBecario open={openModal} onClose={() => setOpenModal(false)} onSave={handleSaveBecario} becario={null} />
+          <Stack direction="row" gap={1} alignItems="center" sx={{ mt: 3, opacity: 0.8 }}>
+            <CopyrightIcon sx={{ fontSize: 16 }} />
+            <Typography variant="caption">
+              {new Date().getFullYear()} LINSI - UTN La Plata. Todos los derechos reservados.
+            </Typography>
+          </Stack>
+        </Container>
+      </Box>
 
-        {/* Snackbar */}
-        <Snackbar open={snackbar.open} autoHideDuration={2800} onClose={() => setSnackbar(s => ({ ...s, open: false }))} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
-          <Alert onClose={() => setSnackbar(s => ({ ...s, open: false }))} severity={snackbar.severity} variant="filled" sx={{ width: '100%' }}>
-            {snackbar.message}
-          </Alert>
-        </Snackbar>
-      </Container>
+      {/* Modal */}
+      <ModalNuevoBecario
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+        onSave={handleSaveBecario}
+        becario={null}
+      />
+
+      {/* Snackbar */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={2800}
+        onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+          severity={snackbar.severity}
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </ThemeProvider>
   );
 }
