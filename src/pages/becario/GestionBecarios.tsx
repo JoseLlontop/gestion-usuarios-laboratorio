@@ -124,7 +124,6 @@ const GestionBecarios: React.FC = () => {
                 <TableCell>Legajo</TableCell>
                 <TableCell>Apellido</TableCell>
                 <TableCell>Nombre</TableCell>
-                <TableCell>DNI</TableCell>
                 <TableCell>Móvil</TableCell>
                 <TableCell>Telegram</TableCell>
                 <TableCell>E-mail</TableCell>
@@ -141,7 +140,6 @@ const GestionBecarios: React.FC = () => {
                   <TableCell>{i.legajo ?? '—'}</TableCell>
                   <TableCell>{i.apellido ?? '—'}</TableCell>
                   <TableCell>{i.nombre ?? '—'}</TableCell>
-                  <TableCell>{i.dni ?? '—'}</TableCell>
                   <TableCell>{i.nroMovil ?? '—'}</TableCell>
                   <TableCell>{i.usuarioTelegram ?? '—'}</TableCell>
                   <TableCell>{i.email ?? '—'}</TableCell>
