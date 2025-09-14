@@ -1,7 +1,6 @@
 import { AppBar, Toolbar, Typography, IconButton } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import colorConfigs from "../../configs/colorConfigs";
-import sizeConfigs from "../../configs/sizeConfigs";
 
 type Props = {
   onOpenSidebar: () => void;
@@ -13,21 +12,22 @@ const Topbar = ({ onOpenSidebar }: Props) => {
       position="sticky"
       elevation={0}
       sx={{
-        width: { xs: "100%", md: `calc(100% - ${sizeConfigs.sidebar.width})` },
-        ml: { md: sizeConfigs.sidebar.width },
-        bgcolor: colorConfigs.mainBg,       // mismo fondo que el layout
+        display: { xs: "block", md: "none" },
+        width: "100%",
+        bgcolor: colorConfigs.sidebar.activeBg,
         color: "inherit",
-        borderBottom: 0,                    // sin línea/borde
-        boxShadow: "none",                  // sin sombra
+        boxShadow: "none",
       }}
     >
-      <Toolbar>
-        {/* Botón hamburguesa visible SOLO en mobile */}
+      <Toolbar disableGutters sx={{ px: 2 }}>
         <IconButton
-          color="inherit"
           aria-label="open sidebar"
           onClick={onOpenSidebar}
-          sx={{ mr: 2, display: { xs: "inline-flex", md: "none" } }}
+          edge="start"
+          sx={{
+            mr: 1,
+            color: (theme) => theme.palette.common.white // <- fuerza blanca
+          }}
         >
           <MenuIcon />
         </IconButton>
@@ -39,3 +39,4 @@ const Topbar = ({ onOpenSidebar }: Props) => {
 };
 
 export default Topbar;
+
