@@ -52,12 +52,14 @@ const GestionBecarios: React.FC = () => {
     return () => unsubA();
   }, []);
 
-  // Filtrado: aplicamos los filtros sobre svcItems (así podemos usar areaId y tener acceso al id)
   const itemsFiltrados = svcItems.filter(item => {
-    // name para búsqueda
     const name = `${item.nombre ?? ''} ${item.apellido ?? ''}`.toLowerCase();
     const matchNombre = name.includes(filtroNombre.toLowerCase());
-    const matchArea = filtroArea ? ((item as any).areaId === filtroArea) : true;
+
+    // comparar por nombre de área en vez de areaId
+    const areaNombreBecario = ((item as any).areaNombre ?? '').toString().toLowerCase();
+    const matchArea = filtroArea ? areaNombreBecario.includes(filtroArea.toLowerCase()) : true;
+
     return matchNombre && matchArea;
   });
 
@@ -89,22 +91,23 @@ const GestionBecarios: React.FC = () => {
           sx={{ width: 260 }}
         />
 
-        <FormControl size="small" sx={{ minWidth: 220 }}>
-          <InputLabel id="select-area-label">Filtrar por área</InputLabel>
-          <Select
-            labelId="select-area-label"
-            value={filtroArea}
-            label="Filtrar por área"
-            onChange={e => setFiltroArea(e.target.value)}
-          >
-            <MenuItem value="">Todas</MenuItem>
-            {areas.map(a => (
-              <MenuItem key={a.id} value={a.id}>
-                {a.nombre}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+      <FormControl size="small" sx={{ minWidth: 220 }}>
+        <InputLabel id="select-area-label">Filtrar por área</InputLabel>
+        <Select
+          labelId="select-area-label"
+          value={filtroArea}
+          label="Filtrar por área"
+          onChange={e => setFiltroArea(e.target.value as string)}
+        >
+          <MenuItem value="">Todas</MenuItem>
+          {areas.map(a => (
+            // antes: value={a.id}
+            <MenuItem key={a.id} value={a.nombre}>
+              {a.nombre}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
       </Box>
 
       {/* Contenido: tabla o loader */}

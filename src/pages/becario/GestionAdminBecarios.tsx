@@ -101,15 +101,17 @@ const GestionAdminBecarios: React.FC = () => {
   }, []);
 
   // -------------------------
-  // Filtrado (aplicado sobre svcItems para garantizar que podemos usar doc.id en acciones)
+  // Filtrado 
   // -------------------------
   const svcItemsFiltrados = svcItems.filter(i => {
     const name = `${i.nombre ?? ''} ${i.apellido ?? ''}`.toLowerCase();
-    const matchName = name.includes(filtroNombre.toLowerCase());
-    const matchArea = filtroArea ? ((i as any).areaId === filtroArea) : true;
+    const matchName = name.includes((filtroNombre ?? '').toLowerCase());
+
+    const areaNombreBecario = ((i as any).areaNombre ?? '').toString().toLowerCase();
+    const matchArea = filtroArea ? areaNombreBecario.includes(filtroArea.toLowerCase()) : true;
+
     return matchName && matchArea;
   });
-
   // -------------------------
   // Abrir modal: nuevo o editar
   // -------------------------
@@ -250,13 +252,22 @@ const handleSaveBecario = async (appBecario: AppBecario) => {
       <Box display="flex" alignItems="center" mb={2} gap={2} sx={{ flexWrap: 'wrap' }}>
         <TextField label="Buscar por nombre y apellido" value={filtroNombre} onChange={e => setFiltroNombre(e.target.value)} size="small" sx={{ width: 260 }} />
 
-        <FormControl size="small" sx={{ minWidth: 180 }}>
-          <InputLabel id="label-area">Filtrar área</InputLabel>
-          <Select labelId="label-area" value={filtroArea} label="Filtrar área" onChange={e => setFiltroArea(e.target.value)}>
-            <MenuItem value="">Todas</MenuItem>
-            {areas.map(a => <MenuItem key={a.id} value={a.id}>{a.nombre}</MenuItem>)}
-          </Select>
-        </FormControl>
+      <FormControl size="small" sx={{ minWidth: 180 }}>
+        <InputLabel id="label-area">Filtrar área</InputLabel>
+        <Select
+          labelId="label-area"
+          value={filtroArea}
+          label="Filtrar área"
+          onChange={e => setFiltroArea(e.target.value as string)}
+        >
+          <MenuItem value="">Todas</MenuItem>
+          {areas.map(a => (
+            <MenuItem key={a.id} value={a.nombre}>
+              {a.nombre}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
 
         <Button variant="contained" startIcon={<AddIcon />} onClick={openNewModal}>Nuevo Becario</Button>
 
