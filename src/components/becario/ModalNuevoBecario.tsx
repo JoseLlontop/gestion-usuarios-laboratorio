@@ -1,4 +1,3 @@
-// src/components/becario/ModalNuevoBecario.tsx
 import React, { useState, useEffect } from 'react';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
@@ -9,6 +8,8 @@ import {
 import { Becario as AppBecario } from '../../models/types';
 import { subscribeAreas } from '../../services/areas';
 import { subscribeBecas } from '../../services/becas';
+
+import { useAuth } from '../../context/AuthContext';
 
 type ModalNuevoBecarioProps = {
   open: boolean;
@@ -45,6 +46,10 @@ const ModalNuevoBecario: React.FC<ModalNuevoBecarioProps> = ({ open, onClose, on
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Auth desde Context
+  const { user, loading } = useAuth();
+  const isAuthenticated = !!user;
+
   useEffect(() => {
     if (becario) setForm({ ...EMPTY_FORM, ...becario });
     else setForm({ ...EMPTY_FORM });
@@ -56,6 +61,13 @@ const ModalNuevoBecario: React.FC<ModalNuevoBecarioProps> = ({ open, onClose, on
     const unsubB = subscribeBecas(items => setBecas(items.map(b => ({ id: b.id ?? '', nombre: b.nombre }))));
     return () => { unsubA(); unsubB(); };
   }, []);
+
+  // Si el usuario se autentica mientras el diálogo estaba abierto, lo cerramos inmediatamente
+  useEffect(() => {
+    if (isAuthenticated && confirmOpen) {
+      setConfirmOpen(false);
+    }
+  }, [isAuthenticated, confirmOpen]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name } = e.target;
@@ -173,8 +185,23 @@ const ModalNuevoBecario: React.FC<ModalNuevoBecarioProps> = ({ open, onClose, on
     return valid;
   };
 
+  // PRE-SUBMIT: si el usuario está autenticado enviamos directo; si no, abrimos confirmación
   const handlePreSubmit = () => {
-    if (validateForm()) setConfirmOpen(true);
+    if (!validateForm()) return;
+
+    // si aún estamos cargando el estado de auth, no hacemos nada
+    if (loading) return;
+
+    // si el usuario está autenticado, enviamos directo (no mostrar diálogo)
+    if (isAuthenticated) {
+      handleConfirmSubmit();
+      return;
+    }
+
+    // seguridad extra: solo setConfirmOpen si NO está autenticado
+    if (!isAuthenticated) {
+      setConfirmOpen(true);
+    }
   };
 
   const handleConfirmSubmit = async () => {
@@ -211,7 +238,6 @@ const ModalNuevoBecario: React.FC<ModalNuevoBecarioProps> = ({ open, onClose, on
           }
         }}
       >
-        {/* TÍTULO sticky */}
         <DialogTitle
           sx={{
             position: 'sticky',
@@ -227,7 +253,6 @@ const ModalNuevoBecario: React.FC<ModalNuevoBecarioProps> = ({ open, onClose, on
           {becario ? 'Editar Becario' : 'Nuevo Becario'}
         </DialogTitle>
 
-        {/* CONTENIDO scrolleable */}
         <DialogContent
           dividers
           sx={{
@@ -238,7 +263,6 @@ const ModalNuevoBecario: React.FC<ModalNuevoBecarioProps> = ({ open, onClose, on
             WebkitOverflowScrolling: 'touch',
           }}
         >
-          {/* FORM dentro del contenido */}
           <Box
             component="form"
             id="becario-form"
@@ -248,6 +272,7 @@ const ModalNuevoBecario: React.FC<ModalNuevoBecarioProps> = ({ open, onClose, on
             }}
           >
             <Stack spacing={3}>
+              {/* ... (el resto del formulario es exactamente igual que antes) */}
               {/* Datos personales */}
               <Box>
                 <Typography variant="subtitle1" sx={{ mb: 1 }}>
@@ -455,7 +480,6 @@ const ModalNuevoBecario: React.FC<ModalNuevoBecarioProps> = ({ open, onClose, on
           </Box>
         </DialogContent>
 
-        {/* ACCIONES sticky */}
         <DialogActions
           sx={{
             position: 'sticky',
@@ -475,36 +499,38 @@ const ModalNuevoBecario: React.FC<ModalNuevoBecarioProps> = ({ open, onClose, on
             variant="contained"
             type="submit"
             form="becario-form"
-            disabled={saving}
+            disabled={saving || loading}
           >
             Guardar
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Confirmación */}
-      <Dialog
-        open={confirmOpen}
-        onClose={() => !saving && setConfirmOpen(false)}
-        fullWidth
-        maxWidth="sm"
-      >
-        <DialogTitle>Confirmar envío</DialogTitle>
-        <DialogContent>
-          <Alert severity="warning" sx={{ mb: 2 }}>
-            ¿Estás seguro de enviar los datos?
-          </Alert>
-          <Typography variant="body2" color="text.secondary">
-            Verificá la información. Una vez enviada, <strong>no se podrá modificar</strong>.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setConfirmOpen(false)} disabled={saving}>Volver</Button>
-          <Button variant="contained" onClick={handleConfirmSubmit} disabled={saving}>
-            {saving ? 'Guardando…' : 'Confirmar y guardar'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {/* Confirmación: sólo renderizamos si NO está autenticado y ya terminó la carga de auth */}
+      {!loading && !isAuthenticated && (
+        <Dialog
+          open={confirmOpen}
+          onClose={() => !saving && setConfirmOpen(false)}
+          fullWidth
+          maxWidth="sm"
+        >
+          <DialogTitle>Confirmar envío</DialogTitle>
+          <DialogContent>
+            <Alert severity="warning" sx={{ mb: 2 }}>
+              ¿Estás seguro de enviar los datos?
+            </Alert>
+            <Typography variant="body2" color="text.secondary">
+              Verificá la información. Una vez enviada, <strong>no se podrá modificar</strong>.
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setConfirmOpen(false)} disabled={saving}>Volver</Button>
+            <Button variant="contained" onClick={handleConfirmSubmit} disabled={saving}>
+              {saving ? 'Guardando…' : 'Confirmar y guardar'}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
     </>
   );
 };
